@@ -8,6 +8,7 @@
         <attr name="boxWidth" format="dimension"/>
         <attr name="boxHeight" format="dimension"/>
         <attr name="secure" format="boolean" />
+        <attr name="maxCharPerField" format="integer"/>
         <attr name="input" format="enum">
             <enum name="number" value="0"/>
             <enum name="string" value="1"/>

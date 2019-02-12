@@ -8,7 +8,6 @@ import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.text.method.PasswordTransformationMethod;
 import android.text.method.TransformationMethod;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -36,12 +35,13 @@ public class PinText extends LinearLayout{
     private static final int NUMBER = 0;
     private static final int STRING = 1;
 
-    private static final int MAX_CHARS = 1;
+    private int MAX_CHARS = 1;
     private static final int MAX_LINES = 1;
     private int textSize;
     private String hint;
     private int boxWidth;
     private boolean secure;
+    private int boxHeight;
 
     private int focussed;
 
@@ -84,6 +84,8 @@ public class PinText extends LinearLayout{
         this.hint = arr.getString(R.styleable.PinText_hintWord);
         this.hint = correctHintLength(hint, length);
         this.boxWidth = arr.getDimensionPixelSize(R.styleable.PinText_boxWidth, dpToPx(context, 20));
+        this.boxHeight = arr.getDimensionPixelSize(R.styleable.PinText_boxHeight, dpToPx(context, 20));
+        this.MAX_CHARS = arr.getInteger(R.styleable.PinText_maxCharPerField, 1);
         this.focussed = -1;
 
         this.mEditTexts = new PinEditText[this.length];
@@ -95,12 +97,12 @@ public class PinText extends LinearLayout{
         Log.d(TAG, this.inputType + " : " + this.length);
         this.setOrientation(HORIZONTAL);
         int px = dpToPx(getContext(), 8);
-        int pxSmall =dpToPx(getContext(), 4);
+        int pxSmall = dpToPx(getContext(), 4);
         this.setPadding(px, px, px, px);
 
         LayoutParams params = new LayoutParams(
                 boxWidth,
-                LayoutParams.WRAP_CONTENT
+                boxHeight
         );
         params.setMargins(pxSmall, 0, 0, 0);
 
@@ -213,10 +215,11 @@ public class PinText extends LinearLayout{
                     if(keyCode == KeyEvent.KEYCODE_DEL) {
                         //this is for backspace
                         Log.d(TAG, "key Event delete called");
-                        if(((PinEditText)v).getText().length()==0) {
+                        if(event.getAction()!=KeyEvent.ACTION_DOWN && ((PinEditText)v).getText().length()==0) {
                             if(focussed!=0){
-                                mEditTexts[focussed - 1].setSelection(mEditTexts[focussed+1].getText().length());
+                                mEditTexts[focussed].setState(PinEditText.State.EMPTY);
                                 mEditTexts[focussed - 1].requestFocus();
+                                mEditTexts[focussed].setSelection(mEditTexts[focussed].getText().length());
                             }
                             return true;
                         }
@@ -252,11 +255,11 @@ public class PinText extends LinearLayout{
                             if (focussed == length - 1) {
                                 //do nothing
                                 informListeners(getText());
-                                mEditTexts[focussed].setSelection(mEditTexts[focussed].getText().length());
                                 mEditTexts[focussed].requestFocus();
+                                mEditTexts[focussed].setSelection(mEditTexts[focussed].getText().length());
                             } else {
-                                mEditTexts[focussed + 1].setSelection(mEditTexts[focussed+1].getText().length());
                                 mEditTexts[focussed + 1].requestFocus();
+                                mEditTexts[focussed].setSelection(mEditTexts[focussed].getText().length());
                             }
                         }
                     }
@@ -266,8 +269,8 @@ public class PinText extends LinearLayout{
                         if(lb==1 && la==0){
                             mEditTexts[focussed].setState(PinEditText.State.EMPTY);
                             if(focussed>0){
-                                mEditTexts[focussed-1].setSelection(mEditTexts[focussed-1].getText().length());
                                 mEditTexts[focussed-1].requestFocus();
+                                mEditTexts[focussed].setSelection(mEditTexts[focussed].getText().length());
                             }
                         }
                     }
@@ -279,8 +282,17 @@ public class PinText extends LinearLayout{
 
 
     public void setText(String text){
-        for(int i=0; i<text.length() && i<length; i++){
-            this.mEditTexts[i].setText(text.charAt(i));
+        int fieldsRequired = (int) Math.ceil((text.length()*1.0)/MAX_CHARS);
+        Log.d(TAG, "Total Fields : " + length + " :: "+ fieldsRequired);
+        for(int i=0; i<length && i<fieldsRequired; i++){
+            Log.d(TAG, "Current field no: " + i);
+            focussed = i;
+            if(i*MAX_CHARS+MAX_CHARS>text.length()){
+                this.mEditTexts[i].setText(text.substring(i * MAX_CHARS, text.length()));
+            }
+            else {
+                this.mEditTexts[i].setText(text.substring(i * MAX_CHARS, i * MAX_CHARS + MAX_CHARS));
+            }
         }
     }
 
@@ -289,6 +301,7 @@ public class PinText extends LinearLayout{
             this.mEditTexts[i].setText("");
             this.mEditTexts[i].setState(PinEditText.State.EMPTY);
         }
+        this.mEditTexts[0].requestFocus();
     }
 
     public String getText(){
@@ -328,15 +341,6 @@ public class PinText extends LinearLayout{
         }
     }
 
-    public void onDeletePressed() {
-        if(focussed!=-1){
-            Log.d(TAG, "Deleting: " + focussed);
-            mEditTexts[focussed].clearText();
-            if(focussed!=0){
-                mEditTexts[focussed-1].requestFocus();
-            }
-        }
-    }
 
     public interface FilledListener{
         void onFilled(String content);
