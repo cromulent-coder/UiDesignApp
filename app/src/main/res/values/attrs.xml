@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="PinEditText">
+        <attr name="state_filled" format="boolean" />
+        <attr name="state_empty" format="boolean" />
+    </declare-styleable>
+
+</resources>

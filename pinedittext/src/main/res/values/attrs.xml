@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="PinText">
+        <attr name="length" format="integer" />
+        <attr name="size" format="dimension"/>
+        <attr name="hintWord" format="string|reference"/>
+        <attr name="boxWidth" format="dimension"/>
+        <attr name="boxHeight" format="dimension"/>
+        <attr name="secure" format="boolean" />
+        <attr name="input" format="enum">
+            <enum name="number" value="0"/>
+            <enum name="string" value="1"/>
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="PinEditText">
+        <attr name="state_filled" format="boolean" />
+        <attr name="state_empty" format="boolean" />
+    </declare-styleable>
+
+</resources>

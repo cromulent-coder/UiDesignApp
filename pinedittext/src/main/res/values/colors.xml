@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="grayscale">#b3b2b2</color>
+    <color name="colorAccent">#0277bd</color>
+    <color name="colorAccentLighter">#93deff</color>
+</resources>
